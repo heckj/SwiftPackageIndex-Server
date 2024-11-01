@@ -1,0 +1,48 @@
+# postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres-db
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: "postgres"
+              protocol: TCP
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USER
+                  name: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: postgres
+            - name: POSTGRES_DB
+              value: spi_dev
+            - name:  PGDATA
+              value: /pgdata
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: "2"
+          volumeMounts:
+          - mountPath: /pgdata
+            name: postgres-data
+      volumes:
+        - name:  postgres-data
+          emptyDir:
+            sizeLimit: 1024Mi
