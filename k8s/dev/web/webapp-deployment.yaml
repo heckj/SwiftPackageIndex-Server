@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webapp
+  name: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: swiftpackageindex
+        image: registry.gitlab.com/finestructure/swiftpackageindex:2.112.1
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+        - secretRef:
+            name: database-secrets
+        env:
+        - name: DATABASE_HOST
+          value: $(POSTGRES_SERVICE_HOST)
+        - name: DATABASE_PORT
+          value: $(POSTGRES_SERVICE_PORT)
+        resources: {}
+      initContainers:
+      - name: init-wait-postgres
+        image: busybox:1.28
+        command: ['sh', '-c', "until nslookup postgres.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for postgres; sleep 2; done"]
+      - name: init-migrate-schema
+        image: registry.gitlab.com/finestructure/swiftpackageindex:2.112.1
+        command: ['/app/Run', "migrate", "--yes"]
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+        - secretRef:
+            name: database-secrets
+        env:
+        - name: DATABASE_HOST
+          value: $(POSTGRES_SERVICE_HOST)
+        - name: DATABASE_PORT
+          value: $(POSTGRES_SERVICE_PORT)
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status: {}

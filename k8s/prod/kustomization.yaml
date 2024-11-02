@@ -1,0 +1,20 @@
+# k8s/kustomization.yaml
+apiVersion: v1
+kind: Kustomization
+namespace: prod
+resources:
+  - web/webapp-service.yaml
+  - web/webapp-deployment.yaml
+
+secretGenerator:
+  - name: database-secrets
+    literals: 
+      - DATABASE_USERNAME=...spi-production-database-username...
+      - DATABASE_PASSWORD=...spi-production-database-password...
+
+configMapGenerator:
+  - name: postgres-config
+    literals:
+      - DATABASE_NAME=spi
+      - DATABASE_HOST=...postgres host...
+      - DATABASE_PORT=5432

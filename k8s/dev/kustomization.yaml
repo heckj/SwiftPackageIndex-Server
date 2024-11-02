@@ -1,0 +1,24 @@
+# k8s/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dev
+
+resources:
+  - namespace.yaml
+  - db/postgres-deployment.yaml
+  - db/postgres-secret.yaml
+  - db/postgres-service.yaml
+  - web/webapp-service.yaml
+  - web/webapp-deployment.yaml
+
+secretGenerator:
+  - name: database-secrets
+    literals: 
+      - DATABASE_USERNAME=spi_dev
+      - DATABASE_PASSWORD=spi_dev
+
+configMapGenerator:
+  - name: postgres-config
+    literals:
+      - DATABASE_NAME=spi_dev

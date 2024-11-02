@@ -113,6 +113,12 @@ fiddling/debugging:
     kubectl logs pod/webapp-677d9d79df-nzrfb -c init-wait-postgres # Inspect the first init container
     kubectl logs pod/webapp-677d9d79df-nzrfb -c init-migrate-schema   # Inspect the second init container
 
+Kustomize:
+
+    kubectl apply -k k8s/dev
+    kubectl logs pod/webapp-bf4b45945-w9c6m -c init-migrate-schema -n dev   
+    kubectl delete -k k8s/dev
+
 ### Quirks and workarounds spotted so far:
 
 - No “depends_on” for containers running in Kubernetes, like we’re currently leveraging for
